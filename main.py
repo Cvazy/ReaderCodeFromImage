@@ -1,6 +1,19 @@
+from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image, ImageEnhance, ImageFilter
 import pytesseract
 import re
+import tempfile
+import os
+
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["POST"],
+    allow_headers=["*"],
+)
 
 
 def preprocess_image(image_path):
@@ -112,3 +125,19 @@ def main(image_path):
 
     return result
 
+
+@app.post("/extract-code")
+async def extract_code(file: UploadFile = File(...)):
+    try:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as temp:
+            temp.write(await file.read())
+            temp_path = temp.name
+
+        result = main(temp_path)
+
+        os.unlink(temp_path)
+
+        return {"code": result}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
