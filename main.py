@@ -20,6 +20,7 @@ def preprocess_image(image_path):
     image = Image.open(image_path)
 
     image = image.convert('L')
+    image = ImageEnhance.Contrast(image).enhance(2.0)
     image = image.point(lambda x: 0 if x < 128 else 255)
 
     return image
@@ -28,7 +29,7 @@ def preprocess_image(image_path):
 def second_preprocess_image(image_path):
     image = Image.open(image_path).convert("L")
     image = ImageEnhance.Contrast(image).enhance(2.0)
-    image = image.filter(ImageFilter.SHARPEN)
+
     return image
 
 
